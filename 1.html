@@ -1,0 +1,80 @@
+<!-- ---------- ORDER DETAILS + SMALL MAP SECTION ---------- -->
+
+<div style="padding: 15px; font-family: Arial; max-width: 500px; margin: auto;">
+
+    <!-- Order Info -->
+    <h3 style="margin-bottom: 5px;">Order Details</h3>
+
+    <p><strong>Order ID:</strong> #ORD24891</p>
+    <p><strong>Estimated Delivery:</strong> 3 Days</p>
+
+    <!-- Fallback when GPS fails -->
+    <p id="gpsError" style="color:red; display:none;">
+        ⚠ Unable to access your location. Please enable GPS.
+    </p>
+
+    <!-- Map Box -->
+    <div id="smallMap" style="
+        height: 250px;
+        width: 100%;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 0 8px rgba(0,0,0,0.2);
+        margin-top: 15px;
+    "></div>
+</div>
+
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+    // Dummy Store Address
+    const storeLocation = [17.3850, 78.4867]; // Hyderabad (sample store)
+
+    let userLocation = null;
+
+    // Initialize Map early
+    const map = L.map('smallMap', {
+        zoomControl: false,
+        dragging: true,
+        scrollWheelZoom: false
+    }).setView(storeLocation, 12);
+
+    // Add Map Tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18
+    }).addTo(map);
+
+    // Store Marker
+    const storeMarker = L.marker(storeLocation)
+        .addTo(map)
+        .bindPopup("🏬 Store");
+
+    // Get User Location
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+
+            userLocation = [position.coords.latitude, position.coords.longitude];
+
+            // User Marker
+            L.marker(userLocation)
+                .addTo(map)
+                .bindPopup("📍 Your Location")
+                .openPopup();
+
+            // Fit both markers
+            const group = new L.featureGroup([
+                storeMarker,
+                L.marker(userLocation)
+            ]);
+
+            map.fitBounds(group.getBounds(), { padding: [30, 30] });
+
+        }, function(error) {
+            document.getElementById("gpsError").style.display = "block";
+        });
+    } else {
+        document.getElementById("gpsError").style.display = "block";
+    }
+</script>
